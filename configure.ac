@@ -92,11 +92,13 @@ if test -z "${LIBS}"; then
     AC_MSG_ERROR([${GREP} does not support option -o])
   fi
   [
-  LIBS=`${H5CC} -show | ${GREP} -o "\-L[^[:space:]]\+" | tr "\n" " "` 
+  LIBS=`${H5CC} -show | ${GREP} -o "\-L[^[:space:]]\+" | tr "\n" " " | sed 's/-L//'`
   ]
-  
+
+dnl	  LIBS="
   dnl Fix for newer Debian versions
-  HDF5R_LIBS="${LIBS} -L. -lhdf5_hl -lhdf5 -lz -lm"
+  HDF5R_LIBS="-L${LIBS} -Wl,-rpath,${LIBS} -L. -lhdf5_hl -lhdf5 -lz -lm"
+  echo "HDF5R_LIBS: ${HDF5R_LIBS}"
 
 fi
 
