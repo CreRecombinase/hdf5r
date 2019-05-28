@@ -233,8 +233,8 @@ h5attr <- function(x, which) {
 ##' @param d1 First dimension of the object
 ##' @param ... Used for other dimension of the object
 ##' @param op Operation to perform on the \code{\link{H5S}}. Look into the HDF5 online help
-##' \url{https://www.hdfgroup.org/HDF5/doc/RM/RM_H5S.html#Dataspace-SelectElements} and
-##' \url{https://www.hdfgroup.org/HDF5/doc/RM/RM_H5S.html#Dataspace-SelectHyperslab}
+##' \url{https://portal.hdfgroup.org/display/HDF5/H5S_SELECT_ELEMENTS} and
+##' \url{https://portal.hdfgroup.org/display/HDF5/H5S_SELECT_HYPERSLAB}
 ##' @param dataset_xfer_pl An object of class \code{\link{H5P_DATASET_XFER}}.
 ##' @param flags Some flags governing edge cases of conversion from HDF5 to R. This is related to how integers are being treated and
 ##' the issue of R not being able to natively represent 64bit integers and not at all being able to represent unsigned 64bit integers
@@ -583,10 +583,10 @@ hyperslab_to_points <- function(hyperslab) {
     stopifnot(length(hyperslab)==4 && is.numeric(hyperslab))
     ## c("start", "count", "stride", "block")
     if(hyperslab[[2]] == 1) { # only one block
-        res <- seq_len(hyperslab[[4]]) + hyperslab[[1]] - 1
+        res <- (seq_len(hyperslab[[4]]) - 1) + hyperslab[[1]] 
     }
     else if(hyperslab[[4]] == 1) { # only blocks of size 1
-        res <- ((seq_len(hyperslab[[2]]) - 1) * hyperslab[[3]]) + hyperslab[[1]] - 1
+        res <- ((seq_len(hyperslab[[2]]) - 1) * hyperslab[[3]]) + hyperslab[[1]]
     }
     else { # mixed; should not occur for us but will write function to handle this anyway
         ## doesn't need to be overly efficient

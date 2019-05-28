@@ -1,7 +1,7 @@
 Package: hdf5r
 Type: Package
 Title: Interface to the 'HDF5' Binary Data Format
-Version: 1.0.1
+Version: 1.2.0
 Authors@R: c(
     person("Holger", "Hoefling", email = "hhoeflin@gmail.com", role = c("aut", "cre")),
     person("Mario", "Annau", email = "mario.annau@gmail.com", role = "aut"),
@@ -35,7 +35,7 @@ Suggests:
 SystemRequirements: HDF5 (>= 1.8.13)
 VignetteBuilder: knitr
 NeedsCompilation: yes
-RoxygenNote: 6.0.1.9001
+RoxygenNote: 6.1.1.9000
 Collate: 
     'Common_functions.R'
     'Compound.R'

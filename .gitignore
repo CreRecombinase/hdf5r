@@ -1,3 +1,4 @@
+**/*.ipynb_checkpoints
 *.o
 *.Rout
 *~
@@ -12,4 +13,4 @@ config.log
 config.status
 test.h5
 *.Rcheck
-.tar.gz
+*.tar.gz
