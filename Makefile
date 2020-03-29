@@ -1,4 +1,5 @@
 R := R --slave --vanilla -e
+Rscript := Rscript -e
 
 PKG_VERSION := $(shell grep -i ^version DESCRIPTION | cut -d : -d \  -f 2)
 PKG_NAME := $(shell grep -i ^package DESCRIPTION | cut -d : -d \  -f 2)
@@ -20,16 +21,6 @@ CHECKPATH := $(PKG_NAME).Rcheck
 CHECKLOG := `cat $(CHECKPATH)/00check.log`
 CURRENT_DIR := $(shell pwd)
 
-# Makevars used for CRAN release
-HDF5_VERSION_USE=1_8_14
-WINC=$${LIB_HDF5}/include
-WLIB=$${LIB_HDF5}/lib$${R_ARCH}
-HDF5R_CPPFLAGS=
-DEFINE_H5FREE_MEMORY=0
-HDF5R_LIBS=-L${WLIB} -lhdf5 -lhdf5_hl -lz -lm
-HDF5R_CFLAGS=-I${WINC}/hdf5 -I${WINC}/hdf5_hl -I${WINC}/cmakeconf -I${HDF5_VERSION_USE} -I.
-# Makevars end
-
 .PHONY: all build check manual install clean compileAttributes roxygen\
 	build-cran check-cran doc 
 
@@ -45,18 +36,7 @@ $(PKG_NAME)_$(PKG_VERSION).tar.gz: $(PKG_FILES)
 build-cran:
 	@make clean
 	@make roxygen
-	# Generate src/Makevars.win
-	sed -e 's#@HDF5_VERSION_USE@#${HDF5_VERSION_USE}#g' -e 's#@HDF5R_CFLAGS@#${HDF5R_CFLAGS}#g'  \
--e  's#@HDF5R_CPPFLAGS@#${HDF5R_CPPFLAGS}#g' -e  's#@HDF5R_LIBS@#${HDF5R_LIBS}#g' \
--e  's#@DEFINE_H5FREE_MEMORY@#${DEFINE_H5FREE_MEMORY}#g' \
-src/Makevars.in > src/Makevars.win
-	# Swap configure.win
-	@cp configure.win configure.win.temp; cat /dev/null >| configure.win
-	R CMD build --resave-data .
-	# Unswap configure.win
-	@cp configure.win.temp configure.win; rm configure.win.temp
-	# Remove src/Makevars.win
-	rm src/Makevars.win
+	@make build
 
 roxygen: $(R_FILES)
 	$(R) 'devtools::load_all(".", reset=TRUE, recompile = FALSE, export_all=FALSE)';
