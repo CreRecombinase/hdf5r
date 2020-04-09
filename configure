@@ -623,24 +623,16 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-HDF5R_LIBS
-HDF5R_CPPFLAGS
-HDF5R_CFLAGS
 DEFINE_H5FREE_MEMORY
 HDF5_API_VERS_USE
 HDF5_VERSION_USE
 HDF5_FLIBS
 HDF5_FFLAGS
 HDF5_FC
-HDF5_LIBS
 HDF5_LDFLAGS
-HDF5_CPPFLAGS
 HDF5_CFLAGS
 HDF5_CC
 HDF5_REVISION_VERSION
-HDF5_MINOR_VERSION
-HDF5_MAJOR_VERSION
-HDF5_VERSION
 H5FC
 EGREP
 CPP
@@ -652,6 +644,11 @@ LDFLAGS
 CFLAGS
 CC
 H5CC
+HDF5_MINOR_VERSION
+HDF5_MAJOR_VERSION
+HDF5_VERSION
+HDF5_CPPFLAGS
+HDF5_LIBS
 GREP
 AWK
 SED
@@ -674,7 +671,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -746,7 +742,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -999,15 +994,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1145,7 +1131,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1298,7 +1284,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -2258,6 +2243,26 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+#############################################################################
+##
+## Copyright 2016 Novartis Institutes for BioMedical Research Inc.
+## Licensed under the Apache License, Version 2.0 (the "License");
+## you may not use this file except in compliance with the License.
+## You may obtain a copy of the License at
+##
+## http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
+##
+#############################################################################
+
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
 $as_echo_n "checking for a sed that does not truncate output... " >&6; }
 if ${ac_cv_path_SED+:} false; then :
@@ -2431,6 +2436,44 @@ fi
 $as_echo "$ac_cv_path_GREP" >&6; }
  GREP="$ac_cv_path_GREP"
 
+
+
+
+
+
+
+
+if test "$with_hdf5" != "yes"; then
+
+RHDF5LIB_INSTALLED=$(echo 'cat(suppressWarnings(require(Rhdf5lib, quietly=TRUE, character.only=FALSE, warn.conflicts=FALSE)))' | "${R_HOME}/bin/R" --vanilla --slave)
+
+
+if test "$RHDF5LIB_INSTALLED" != "TRUE"; then
+   with_hdf5="no"
+else
+   with_hdf5="yes"
+   ## get the relevant variables so that headers can be found and static library can be linked
+   HDF5_LIBS=$(echo 'cat(Rhdf5lib::pkgconfig("PKG_C_HL_LIBS"))' | "${R_HOME}/bin/R" --vanilla --slave)
+   RHDF5LIB_INCLUDEPATH=$(echo 'cat(system.file("include",package="Rhdf5lib"))' | "${R_HOME}/bin/R" --vanilla --slave)
+   HDF5_VERSION==$(echo 'cat(Rhdf5lib::getHdf5Version())' | "${R_HOME}/bin/R" --vanilla --slave)
+   HDF5_MAJOR_VERSION=$(echo 'cat(package_version(Rhdf5lib::getHdf5Version())$major)' | "${R_HOME}/bin/R" --vanilla --slave)
+   HDF5_MINOR_VERSION=$(echo 'cat(package_version(Rhdf5lib::getHdf5Version())$major)' | "${R_HOME}/bin/R" --vanilla --slave)
+
+   #HDF5_LIBS='-L"'${RHDF5LIB_LIBPATH}'" -lhdf5_hl-static -lhdf5-static -lz -lm'
+   HDF5_CPPFLAGS='-I'"${RHDF5LIB_INCLUDEPATH}"#' -DWINDOWS'
+
+
+
+
+
+
+fi
+
+fi
+
+
+
+if test "$with_hdf5" != "yes"; then
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3944,6 +3987,9 @@ $as_echo "#define HAVE_HDF5 1" >>confdefs.h
 fi
 
 
+fi
+
+
 if test "$with_hdf5" = "yes"; then
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Found hdf5 with version: $HDF5_VERSION" >&5
 $as_echo "Found hdf5 with version: $HDF5_VERSION" >&6; }
@@ -4327,133 +4373,16 @@ fi
 
 
 
-: ${R_HOME=`R RHOME`}
-if test -z "${R_HOME}"; then
-  echo "could not determine R_HOME"
-  exit 1
-fi
-
-if test -z "${LIBS}"; then
-    # Extract the first word of "ggrep", so it can be a program name with args.
-set dummy ggrep; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GREP+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GREP"; then
-  ac_cv_prog_GREP="$GREP" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GREP="`which ggrep`"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_GREP" && ac_cv_prog_GREP="`which grep`"
-fi
-fi
-GREP=$ac_cv_prog_GREP
-if test -n "$GREP"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GREP" >&5
-$as_echo "$GREP" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
 
 
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${GREP} accepts -o" >&5
-$as_echo_n "checking whether ${GREP} accepts -o... " >&6; }
-  if `echo '' | ${GREP} -o '' >/dev/null 2>&1`
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    as_fn_error $? "${GREP} does not support option -o" "$LINENO" 5
-  fi
-
-  LIBS=`${H5CC} -show | ${GREP} -o "\-L[^[:space:]]\+" | tr "\n" " "`
-
-
-    HDF5R_LIBS="${LIBS} -L. -lhdf5_hl -lhdf5 -lz -lm"
-
-fi
-
-if test -z "${CPPFLAGS}"; then
-    # Extract the first word of "ggrep", so it can be a program name with args.
-set dummy ggrep; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GREP+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$GREP"; then
-  ac_cv_prog_GREP="$GREP" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GREP="`which ggrep`"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  test -z "$ac_cv_prog_GREP" && ac_cv_prog_GREP="`which grep`"
-fi
-fi
-GREP=$ac_cv_prog_GREP
-if test -n "$GREP"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GREP" >&5
-$as_echo "$GREP" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
 
 
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${GREP} accepts -o" >&5
-$as_echo_n "checking whether ${GREP} accepts -o... " >&6; }
-  if `echo '' | ${GREP} -o '' >/dev/null 2>&1`
-  then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-    as_fn_error $? "${GREP} does not support option -o" "$LINENO" 5
-  fi
-
-  echo 'int main() { return; }' > myconftest.c
 
 
 
-  HDF5R_CPPFLAGS=`${H5CC} -show -c myconftest.c | ${GREP} -o "\-I[^[:space:]]\+" | tr "\n" " "`
 
-  rm -f myconftest.c
-fi
-
-HDF5R_CFLAGS=""
 
 
 

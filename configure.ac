@@ -4,10 +4,18 @@ dnl Grab that macro that checks for HDF5 availability
 m4_include([inst/m4/ax_lib_hdf5.m4])
 m4_include([inst/m4/ax_compare_version.m4])
 m4_include([inst/m4/hh_hdf5rlib.m4])
+m4_include([inst/m4/hh_rhdf5lib.m4])
+
+HH_RHDF5LIB()
+
+if test "$with_hdf5" != "yes"; then
 
 AX_LIB_HDF5()
 
-if test "$with_hdf5" = "yes"; then 
+fi
+
+
+if test "$with_hdf5" = "yes"; then
 AC_MSG_RESULT([Found hdf5 with version: $HDF5_VERSION])
 AX_COMPARE_VERSION([$HDF5_VERSION], [ge], [1.8.13], [hdf5_version_sufficient="yes"], AC_MSG_ERROR([The version of hdf5 installed on your system is not sufficient. Please ensure that at least version 1.8.13 is installed]))
 else 
@@ -84,65 +92,65 @@ AC_SUBST(DEFINE_H5FREE_MEMORY)
 
 
 
-dnl Now find the compiler and compiler flags to use
-: ${R_HOME=`R RHOME`}
-if test -z "${R_HOME}"; then
-  echo "could not determine R_HOME"
-  exit 1
-fi
+dnl dnl Now find the compiler and compiler flags to use
+dnl : ${R_HOME=`R RHOME`}
+dnl if test -z "${R_HOME}"; then
+dnl   echo "could not determine R_HOME"
+dnl   exit 1
+dnl fi
 
-if test -z "${LIBS}"; then
-  dnl prefer ggrep if installed
-  AC_CHECK_PROG(GREP,ggrep,`which ggrep`, `which grep`)
+dnl if test -z "${LIBS}"; then
+dnl   dnl prefer ggrep if installed
+dnl   AC_CHECK_PROG(GREP,ggrep,`which ggrep`, `which grep`)
 
-  dnl check if $GREP supports option -o
-  AC_MSG_CHECKING([whether ${GREP} accepts -o])
-  if `echo '' | ${GREP} -o '' >/dev/null 2>&1`
-  then
-    AC_MSG_RESULT([yes])
-  else
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([${GREP} does not support option -o])
-  fi
-  [
-  LIBS=`${H5CC} -show | ${GREP} -o "\-L[^[:space:]]\+" | tr "\n" " "` 
-  ]
+dnl   dnl check if $GREP supports option -o
+dnl   AC_MSG_CHECKING([whether ${GREP} accepts -o])
+dnl   if `echo '' | ${GREP} -o '' >/dev/null 2>&1`
+dnl   then
+dnl     AC_MSG_RESULT([yes])
+dnl   else
+dnl     AC_MSG_RESULT([no])
+dnl     AC_MSG_ERROR([${GREP} does not support option -o])
+dnl   fi
+dnl   [
+dnl   LIBS=`${H5CC} -show | ${GREP} -o "\-L[^[:space:]]\+" | tr "\n" " "`
+dnl   ]
   
-  dnl Fix for newer Debian versions
-  HDF5R_LIBS="${LIBS} -L. -lhdf5_hl -lhdf5 -lz -lm"
+dnl   dnl Fix for newer Debian versions
+dnl   HDF5R_LIBS="${LIBS} -L. -lhdf5_hl -lhdf5 -lz -lm"
 
-fi
+dnl fi
 
-if test -z "${CPPFLAGS}"; then
-  dnl prefer ggrep if installed
-  AC_CHECK_PROG(GREP,ggrep,`which ggrep`, `which grep`)
+dnl if test -z "${CPPFLAGS}"; then
+dnl   dnl prefer ggrep if installed
+dnl   AC_CHECK_PROG(GREP,ggrep,`which ggrep`, `which grep`)
 
-  dnl check if $GREP supports option -o
-  AC_MSG_CHECKING([whether ${GREP} accepts -o])
-  if `echo '' | ${GREP} -o '' >/dev/null 2>&1`
-  then
-    AC_MSG_RESULT([yes])
-  else
-    AC_MSG_RESULT([no])
-    AC_MSG_ERROR([${GREP} does not support option -o])
-  fi
+dnl   dnl check if $GREP supports option -o
+dnl   AC_MSG_CHECKING([whether ${GREP} accepts -o])
+dnl   if `echo '' | ${GREP} -o '' >/dev/null 2>&1`
+dnl   then
+dnl     AC_MSG_RESULT([yes])
+dnl   else
+dnl     AC_MSG_RESULT([no])
+dnl     AC_MSG_ERROR([${GREP} does not support option -o])
+dnl   fi
 
-  echo 'int main() { return; }' > myconftest.c
+dnl   echo 'int main() { return; }' > myconftest.c
 
 
-  [
-  HDF5R_CPPFLAGS=`${H5CC} -show -c myconftest.c | ${GREP} -o "\-I[^[:space:]]\+" | tr "\n" " "`
-  ]
-  rm -f myconftest.c
-fi
+dnl   [
+dnl   HDF5R_CPPFLAGS=`${H5CC} -show -c myconftest.c | ${GREP} -o "\-I[^[:space:]]\+" | tr "\n" " "`
+dnl   ]
+dnl   rm -f myconftest.c
+dnl fi
 
 dnl dummy substitute HDF5R_CFLAGS
-HDF5R_CFLAGS=""
-AC_SUBST(HDF5R_CFLAGS)
+dnl HDF5R_CFLAGS=""
+AC_SUBST(HDF5_CFLAGS)
 
 dnl substitute CPPFLAGS and LIBS
-AC_SUBST(HDF5R_CPPFLAGS)
-AC_SUBST(HDF5R_LIBS)
+AC_SUBST(HDF5_CPPFLAGS)
+AC_SUBST(HDF5_LIBS)
 dnl and do subsitution in the src/Makevars.in 
 AC_CONFIG_FILES([src/Makevars])
 AC_OUTPUT
